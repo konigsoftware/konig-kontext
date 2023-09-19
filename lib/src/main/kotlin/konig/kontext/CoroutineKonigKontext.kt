@@ -4,5 +4,5 @@ import com.google.protobuf.Message
 import konig.kontext.CoroutineKonigKontextKey
 import kotlin.coroutines.AbstractCoroutineContextElement
 
-class CoroutineKonigKontext<ContextType : Message>(val context: ContextType) :
+internal class CoroutineKonigKontext<ContextType : Message>(val context: ContextType) :
     AbstractCoroutineContextElement(CoroutineKonigKontextKey)

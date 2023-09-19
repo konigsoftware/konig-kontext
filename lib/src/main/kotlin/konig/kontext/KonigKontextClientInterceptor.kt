@@ -9,8 +9,8 @@ import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener
 import io.grpc.Metadata
 import io.grpc.MethodDescriptor
 import io.grpc.kotlin.AbstractCoroutineStub
-import konig.kontext.CALL_OPTIONS_KEY
-import konig.kontext.GRPC_HEADER
+import konig.kontext.KONIG_KONTEXT_GRPC_HEADER_KEY
+import konig.kontext.KONIG_KONTEXT_GRPC_CONTEXT_KEY
 
 class KonigKontextClientInterceptor : ClientInterceptor {
     override fun <ReqT : Any?, RespT : Any?> interceptCall(
@@ -19,12 +19,7 @@ class KonigKontextClientInterceptor : ClientInterceptor {
         next: Channel?
     ): ClientCall<ReqT, RespT> = object : SimpleForwardingClientCall<ReqT, RespT>(next?.newCall(method, callOptions)) {
         override fun start(responseListener: Listener<RespT>?, headers: Metadata?) {
-            val konigKontextValue =
-                callOptions?.getOption(CALL_OPTIONS_KEY)
-
-            if (konigKontextValue != null) {
-                headers?.put(GRPC_HEADER, konigKontextValue.toByteArray())
-            }
+            headers?.put(KONIG_KONTEXT_GRPC_HEADER_KEY, KONIG_KONTEXT_GRPC_CONTEXT_KEY.get().toByteArray())
 
             super.start(
                 object : SimpleForwardingClientCallListener<RespT>(responseListener) {
