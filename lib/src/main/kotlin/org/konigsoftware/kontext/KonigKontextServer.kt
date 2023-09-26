@@ -1,10 +1,8 @@
-package org.konigsoftware.konig.kontext
+package org.konigsoftware.kontext
 
 import com.google.protobuf.Message
 import io.grpc.BindableService
 import io.grpc.ServerBuilder
-import konig.kontext.KONIG_KONTEXT_GRPC_CONTEXT_KEY
-import konig.kontext.KonigKontextServerInterceptor
 import kotlin.reflect.KClass
 
 interface KonigKontextServer<ContextType : Message> {

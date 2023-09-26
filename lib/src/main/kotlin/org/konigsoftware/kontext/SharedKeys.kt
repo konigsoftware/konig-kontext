@@ -1,10 +1,9 @@
-package konig.kontext
+package org.konigsoftware.kontext
 
 import com.google.protobuf.Message
 import io.grpc.Context
 import io.grpc.Metadata
 import io.grpc.Metadata.Key
-import kotlin.coroutines.CoroutineContext
 
 /**
  * gRPC header ([Metadata]) key whose value contains the binary version of the Konig Kontext

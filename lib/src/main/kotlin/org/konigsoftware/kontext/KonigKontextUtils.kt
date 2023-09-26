@@ -1,4 +1,4 @@
-package konig.kontext
+package org.konigsoftware.kontext
 
 import com.google.protobuf.Message
 import io.grpc.Context
