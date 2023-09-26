@@ -1,8 +1,6 @@
-package konig.kontext
+package org.konigsoftware.kontext
 
 import com.google.protobuf.Message
-import kotlin.coroutines.coroutineContext
-import kotlinx.coroutines.withContext
 import io.grpc.Context as GrpcContext
 
 suspend fun <T, ContextType : Message> withKonigKontext(

@@ -1,10 +1,8 @@
-package konig.kontext
+package org.konigsoftware.kontext
 
 import com.google.protobuf.Message
-import io.grpc.BindableService
 import io.grpc.Context
 import io.grpc.Metadata
-import io.grpc.ServerBuilder
 import io.grpc.ServerCall
 import io.grpc.ServerCall.Listener
 import io.grpc.ServerCallHandler
@@ -13,7 +11,6 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.functions
 import kotlin.reflect.jvm.javaMethod
 import kotlin.reflect.safeCast
-import org.konigsoftware.konig.kontext.KonigKontextServer
 
 internal class KonigKontextServerInterceptor<ContextType : Message>(private val contextClass: KClass<ContextType>) :
     ServerInterceptor {

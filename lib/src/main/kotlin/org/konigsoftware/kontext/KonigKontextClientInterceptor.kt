@@ -1,4 +1,4 @@
-package org.konigsoftware.konig.kontext
+package org.konigsoftware.kontext
 
 import io.grpc.CallOptions
 import io.grpc.Channel
@@ -9,8 +9,6 @@ import io.grpc.ForwardingClientCallListener.SimpleForwardingClientCallListener
 import io.grpc.Metadata
 import io.grpc.MethodDescriptor
 import io.grpc.kotlin.AbstractCoroutineStub
-import konig.kontext.KONIG_KONTEXT_GRPC_HEADER_KEY
-import konig.kontext.KONIG_KONTEXT_GRPC_CONTEXT_KEY
 
 class KonigKontextClientInterceptor : ClientInterceptor {
     override fun <ReqT : Any?, RespT : Any?> interceptCall(
