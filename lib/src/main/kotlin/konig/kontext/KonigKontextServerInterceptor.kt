@@ -1,8 +1,10 @@
 package konig.kontext
 
 import com.google.protobuf.Message
+import io.grpc.BindableService
 import io.grpc.Context
 import io.grpc.Metadata
+import io.grpc.ServerBuilder
 import io.grpc.ServerCall
 import io.grpc.ServerCall.Listener
 import io.grpc.ServerCallHandler
@@ -10,8 +12,10 @@ import io.grpc.ServerInterceptor
 import kotlin.reflect.KClass
 import kotlin.reflect.full.functions
 import kotlin.reflect.jvm.javaMethod
+import kotlin.reflect.safeCast
+import org.konigsoftware.konig.kontext.KonigKontextServer
 
-internal class KonigKontextGrpcContextServerInterceptor<ContextType : Message>(private val contextClass: KClass<ContextType>) :
+internal class KonigKontextServerInterceptor<ContextType : Message>(private val contextClass: KClass<ContextType>) :
     ServerInterceptor {
     private val binaryParserFunction =
         contextClass.functions.find { it.name == "parseFrom" && it.parameters.size == 1 && it.javaMethod?.parameterTypes?.first() == ByteArray::class.java }
@@ -22,7 +26,16 @@ internal class KonigKontextGrpcContextServerInterceptor<ContextType : Message>(p
         headers: Metadata,
         next: ServerCallHandler<ReqT, RespT>
     ): Listener<ReqT> {
-        val konigKontext = getKonigKontextFromGrpcHeaders(headers, contextClass, binaryParserFunction)
+        val konigKontextBinary = headers.get(KONIG_KONTEXT_GRPC_HEADER_KEY) ?: "".toByteArray()
+
+        val parsedContextUntyped = binaryParserFunction.call(konigKontextBinary) ?: throw IllegalStateException(
+            "Invalid KonigKontext binary. Unable to parse ${
+                String(konigKontextBinary)
+            } as ${contextClass.simpleName}"
+        )
+
+        val konigKontext = contextClass.safeCast(parsedContextUntyped)
+            ?: throw IllegalStateException("Unable to cast parsed Konig Kontext message as ${contextClass.simpleName}")
 
         return withGrpcContext(Context.current().extendKonigKontext(konigKontext)) {
             next.startCall(call, headers)
