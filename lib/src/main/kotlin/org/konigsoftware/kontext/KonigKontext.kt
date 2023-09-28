@@ -12,7 +12,7 @@ class KonigKontext<KontextValue> private constructor(
             KonigKontext(key, value)
 
         @JvmStatic
-        fun <KontextValue> getValue(key: KonigKontextKey<KontextValue>): KontextValue = key.grpcContextKey.get()
+        fun <KontextValue> getValue(key: KonigKontextKey<KontextValue>): KontextValue = key.grpcContextKey.get() ?: key.defaultValue
     }
 
     fun run(r: Runnable) {
