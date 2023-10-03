@@ -10,14 +10,18 @@ import io.grpc.Metadata
 import io.grpc.MethodDescriptor
 import io.grpc.stub.AbstractStub
 
-class KonigKontextClientInterceptor<KontextType>(private val konigKontext: KonigKontext<KontextType>) : ClientInterceptor {
+class KonigKontextClientInterceptor<KontextType>(private val konigKontextKey: KonigKontextKey<KontextType>) :
+    ClientInterceptor {
     override fun <ReqT : Any?, RespT : Any?> interceptCall(
         method: MethodDescriptor<ReqT, RespT>?,
         callOptions: CallOptions?,
         next: Channel?
     ): ClientCall<ReqT, RespT> = object : SimpleForwardingClientCall<ReqT, RespT>(next?.newCall(method, callOptions)) {
         override fun start(responseListener: Listener<RespT>?, headers: Metadata?) {
-            headers?.put(konigKontext.grpcHeaderKey, konigKontext.valueToBinary(konigKontext.get()))
+            headers?.put(
+                konigKontextKey.grpcHeaderKey,
+                konigKontextKey.valueToBinary(KonigKontext.getValue(konigKontextKey))
+            )
 
             super.start(
                 object : SimpleForwardingClientCallListener<RespT>(responseListener) {
@@ -31,5 +35,5 @@ class KonigKontextClientInterceptor<KontextType>(private val konigKontext: Konig
     }
 }
 
-fun <T : AbstractStub<T>, KontextType> T.withKonigKontextInterceptor(konigKontext: KonigKontext<KontextType>): T =
-    withInterceptors(KonigKontextClientInterceptor(konigKontext))
+fun <T : AbstractStub<T>, KontextType> T.withKonigKontextInterceptor(konigKontextKey: KonigKontextKey<KontextType>): T =
+    withInterceptors(KonigKontextClientInterceptor(konigKontextKey))

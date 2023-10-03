@@ -8,18 +8,18 @@ import io.grpc.ServerCall.Listener
 import io.grpc.ServerCallHandler
 import io.grpc.ServerInterceptor
 
-class KonigKontextServerInterceptor<KontextType>(private val konigKontext: KonigKontext<KontextType>) :
+class KonigKontextServerInterceptor<KontextType>(private val konigKontextKey: KonigKontextKey<KontextType>) :
     ServerInterceptor {
     override fun <ReqT : Any?, RespT : Any?> interceptCall(
         call: ServerCall<ReqT, RespT>?,
         headers: Metadata,
         next: ServerCallHandler<ReqT, RespT>
     ): Listener<ReqT> {
-        val konigKontextBinary = headers.get(konigKontext.grpcHeaderKey) ?: konigKontext.valueToBinary(konigKontext.defaultValue)
+        val konigKontextBinary = headers.get(konigKontextKey.grpcHeaderKey) ?: konigKontextKey.valueToBinary(konigKontextKey.defaultValue)
 
-        val konigKontextMessage = konigKontext.valueFromBinary(konigKontextBinary)
+        val konigKontextValue = konigKontextKey.valueFromBinary(konigKontextBinary)
 
-        val newGrpcContext = GrpcContext.current().withValue(konigKontext.grpcContextKey, konigKontextMessage)
+        val newGrpcContext = GrpcContext.current().withValue(konigKontextKey.grpcContextKey, konigKontextValue)
 
         return Contexts.interceptCall(newGrpcContext, call, headers, next);
     }
