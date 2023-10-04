@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
-class KonigKontextClientInterceptorTest {
+internal class KonigKontextClientInterceptorTest {
     @Rule
     private val grpcCleanup = GrpcCleanupRule()
 
