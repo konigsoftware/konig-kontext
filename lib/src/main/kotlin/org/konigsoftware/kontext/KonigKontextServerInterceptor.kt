@@ -22,9 +22,7 @@ class KonigKontextServerInterceptor<KontextType>(private val konigKontextKey: Ko
         }.getOrElse {
             // This should only ever happen given a bug in the valueFromBinary or valueToBinary function implementation.
             // A bug in the valueToBinary function could set malformed binary on the gRPC headers.
-            // A bug in the valueFromBinary function could fail to parse properly formatted binary into the KontextType format.
-            // However, both of these cases should be impossible given the requirements in the `init` block of KonigKontext
-            // and the KonigKontext.setValue function
+            // A bug in the valueFromBinary function could fail to parse properly formatted binary into the KontextType object.
             throw IllegalStateException("Unable to parse KonigKontext value from binary. Ensure the KonigKontextKey valueFromBinary and valueToBinary functions are implemented properly")
         }
 
