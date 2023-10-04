@@ -23,7 +23,7 @@ import org.junit.Rule
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class KonigKontextServerInterceptorTest {
+internal class KonigKontextServerInterceptorTest {
     @Rule
     val grpcCleanup = GrpcCleanupRule()
 
