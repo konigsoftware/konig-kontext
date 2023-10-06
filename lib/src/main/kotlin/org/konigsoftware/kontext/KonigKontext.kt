@@ -1,6 +1,8 @@
 package org.konigsoftware.kontext
 
 import io.grpc.Context
+import io.grpc.kotlin.GrpcContextElement
+import kotlinx.coroutines.withContext
 
 class KonigKontext<KontextValue> private constructor(
     internal val konigKontextKey: KonigKontextKey<KontextValue>,
@@ -23,13 +25,10 @@ class KonigKontext<KontextValue> private constructor(
 suspend fun <T, KontextValue> withKonigKontext(
     konigKontext: KonigKontext<KontextValue>,
     block: suspend () -> T
-): T {
-    val context =
+): T = withContext(
+    GrpcContextElement(
         Context.current().withValue(konigKontext.konigKontextKey.grpcContextKey, konigKontext.konigKontextValue)
-    val oldContext: Context = context.attach()
-    return try {
-        block()
-    } finally {
-        context.detach(oldContext)
-    }
+    )
+) {
+    block()
 }
