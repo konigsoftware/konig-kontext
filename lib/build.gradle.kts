@@ -35,8 +35,30 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
     testImplementation("io.grpc:grpc-testing:1.58.0")
     testImplementation("io.grpc:grpc-examples:0.15.0")
+    testImplementation("com.squareup.okhttp3:okhttp:4.10.0")
+    testImplementation("com.squareup.moshi:moshi-kotlin:1.14.0")
 }
 
 tasks.test {
     useJUnitPlatform()
+    filter {
+        includeTestsMatching("*Test")
+        this.isFailOnNoMatchingTests = true
+    }
+}
+
+tasks.register<Test>("integrationTest") {
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching("org.konigsoftware.kontext.*IT")
+        this.isFailOnNoMatchingTests = true
+    }
+}
+
+tasks.build {
+    tasks.getByName("integrationTest").enabled = false
+}
+
+tasks.check {
+    tasks.getByName("integrationTest").enabled = false
 }
