@@ -14,24 +14,32 @@ Installation
 
 ### Gradle:
 
+<details open>
+<summary>Kotlin</summary>
+<br>
 Add the following to your `build.gradle.kts`:
 
 ```kotlin
 implementation("org.konigsoftware:konig-kontext:1.0.0")
 ```
+</details>
 
-or for Groovy add the following to your `build.gradle`:
+<details>
+<summary>Groovy</summary>
+<br>
+Add the following to your `build.gradle`:
 
 ```groovy
 implementation 'org.konigsoftware:konig-kontext:1.0.0'
 ```
+</details>
+
 
 ### Maven:
 
 Add the following to your `pom.xml`:
 
 ```xml
-
 <dependency>
     <groupId>org.konigsoftware</groupId>
     <artifactId>konig-kontext</artifactId>
@@ -52,7 +60,9 @@ protobuf `Message` based KonigKontext and a custom KonigKontext will be explaine
 First define an object that extends `KonigKontextKey` in a shared location and implement the interface. **All of your microservices should have access to this key**.
 The following examples define a key with a value of type `String` in both Kotlin and Java, although you can use _any_ type you like instead:
 
-Kotlin:
+<details open>
+<summary>Kotlin</summary>
+
 ```kotlin
 object MyContextKey : KonigKontextKey<String>() {
     override val defaultValue: String = ""
@@ -62,7 +72,11 @@ object MyContextKey : KonigKontextKey<String>() {
     override fun valueToBinary(value: String): ByteArray = value.toByteArray()
 }
 ```
-Java:
+</details>
+
+<details>
+<summary>Java</summary>
+
 ```java
 public class GlobalContextKeys {
     public static final KonigKontextKey<String> MY_CONTEXT_KEY = new KonigKontextKey<>() {
@@ -83,6 +97,8 @@ public class GlobalContextKeys {
     };
 }
 ```
+</details>
+
 
 #### Protobuf Message Based Type:
 
@@ -94,17 +110,23 @@ This library contains special helpers to encourage using a protobuf message. As 
 that extends `KonigKontextKey` in a global location, but we can use the helper class `KonigKontextProtobufKey` to make this a bit easier.
 The following examples define a key with a value of type `MyContextMessage`, where `MyContextMessage` extends `com.google.protobuf.Message`:
 
-Kotlin:
+<details open>
+<summary>Kotlin</summary>
+
 ```kotlin
 object MyContextKey : KonigKontextProtobufKey<MyContextMessage>(MyContextMessage::class)
 ```
+</details>
 
-Java:
+<details>
+<summary>Java</summary>
+
 ```java
 public class GlobalContextKeys {
     public static final KonigKontextProtobufKey<MyContextMessage> MY_CONTEXT_KEY = KonigKontextProtobufKey.fromJavaClass(MyContextMessage.class);
 };
 ```
+</details>
 
 Again, all of your microservices should have access to the key defined above.
 
@@ -113,7 +135,8 @@ Again, all of your microservices should have access to the key defined above.
 The client side setup just has one step. Simply add the `KonigKontextClientInterceptor` to all of your gRPC clients and
 pass in your previously defined `KonigKontextKey`:
 
-Kotlin:
+<details open>
+<summary>Kotlin</summary>
 
 ```kotlin
 val myServiceClient = MyServiceCoroutineStub(myManagedChannel)
@@ -123,21 +146,25 @@ val myServiceClient = MyServiceCoroutineStub(myManagedChannel)
 val myServiceClient = MyServiceCoroutineStub(myManagedChannel)
     .withKonigKontextInterceptor(MyContextKey)
 ```
+</details>
 
-Java:
+<details>
+<summary>Java</summary>
 
 ```java
 MyServiceBlockingStub myServiceClient = MyServiceGrpc
         .newBlockingStub(ManagedChannelBuilder.forTarget("port here").usePlaintext().build())
         .withInterceptors(new KonigKontextClientInterceptor<>(GlobalContextKeys.MY_CONTEXT_KEY));
 ```
+</details>
 
 ### 3. Server side setup:
 
 The server side setup also just has one step. Simply add the `KonigKontextServerInterceptor` to all of your gRPC servers
 and again pass in your previously defined `KonigKontextKey`:
 
-Kotlin:
+<details open>
+<summary>Kotlin</summary>
 
 ```kotlin
 val myServer = ServerBuilder
@@ -153,8 +180,10 @@ val myServer = ServerBuilder
     .withKonigKontextInterceptor(MyContextKey)
     .build() 
 ```
+</details>
 
-Java:
+<details>
+<summary>Java</summary>
 
 ```java
 Server myServer = ServerBuilder
@@ -163,6 +192,7 @@ Server myServer = ServerBuilder
         .intercept(new KonigKontextServerInterceptor<>(GlobalContextKeys.MY_CONTEXT_KEY))
         .build();
 ```
+</details>
 
 That's it! No more setup required. See the Usage section below for next steps on actually using the library.
 
@@ -171,34 +201,47 @@ Usage
 
 ### Setting value for KonigKontextKey:
 
-Kotlin:
+<details open>
+<summary>Kotlin</summary>
+
 ```kotlin
 withKonigKontext(KonigKontext.withValue(MyContextKey, /* ADD VALUE HERE */)) {
     // Remaining code path that will have access to the updated KonigKontext
 }
 ```
+</details>
 
-Java:
+<details>
+<summary>Java</summary>
+
 ```java
 KonigKontext.withValue(GlobalContextKeys.MY_CONTEXT_KEY, /* set value here */).run(() -> {
     // Remaining code path that will have access to the updated KonigKontext 
 })
 ```
+</details>
 
 ### Getting value for KonigKontextKey:
 
 The code within the closure provided to `withKonigKontext` and `run` (see above) as well as _any_ downstream RPC's called from within that
 closure will have access to the value keyed by your `KonigKontextKey`. To access the value from any downstream RPC simply call:
 
-Kotlin:
+<details open>
+<summary>Kotlin</summary>
+
 ```kotlin
 KonigKontext.getValue(MyContextKey)
 ```
 
-Java:
+</details>
+
+<details>
+<summary>Java</summary>
+
 ```java
 KonigKontext.getValue(GlobalContextKeys.MY_CONTEXT_KEY)
 ```
+</details>
 
 ### Use Cases:
 
