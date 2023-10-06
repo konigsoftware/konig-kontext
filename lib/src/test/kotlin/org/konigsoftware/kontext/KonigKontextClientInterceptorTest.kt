@@ -22,7 +22,187 @@ import org.junit.jupiter.api.Test
 
 class KonigKontextClientInterceptorTest {
     @Rule
-    val grpcCleanup = GrpcCleanupRule()
+    private val grpcCleanup = GrpcCleanupRule()
+
+    @Test
+    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the protobuf KonigKontext is empty, then the KonigKontextKey default value is included on request headers`() {
+        val testServerInterceptor = TestServerInterceptor()
+
+        // Create a fake in process server for Greeter service
+        val serverName = createInProcessServer(testServerInterceptor)
+
+        // Create a client channel and register for automatic graceful shutdown.
+        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
+
+        // Register KonigKontextClientInterceptor on Greeter service client
+        val greeterServiceClientStub =
+            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestProtobufKontextKey)
+
+        greeterServiceClientStub.sayHello(HelloRequest.getDefaultInstance())
+
+        assertNotNull(testServerInterceptor.capturedMetadata)
+        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey))
+        assert(
+            HelloRequest.getDefaultInstance().toByteArray()
+                .contentEquals(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey))
+        )
+        assert(
+            TestProtobufKontextKey.valueToBinary(HelloRequest.getDefaultInstance())
+                .contentEquals(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey))
+        )
+    }
+
+    @Test
+    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the custom KonigKontext is empty, then the KonigKontextKey default value is included on request headers`() {
+        val testServerInterceptor = TestServerInterceptor()
+
+        // Create a fake in process server for Greeter service
+        val serverName = createInProcessServer(testServerInterceptor)
+
+        // Create a client channel and register for automatic graceful shutdown.
+        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
+
+        // Register KonigKontextClientInterceptor on Greeter service client
+        val greeterServiceClientStub =
+            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestCustomKontextKey)
+
+        greeterServiceClientStub.sayHello(HelloRequest.getDefaultInstance())
+
+        assertNotNull(testServerInterceptor.capturedMetadata)
+        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey))
+        assert(
+            "".toByteArray()
+                .contentEquals(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey))
+        )
+        assert(
+            TestCustomKontextKey.valueToBinary("")
+                .contentEquals(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey))
+        )
+    }
+
+    @Test
+    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the protobuf KonigKontext is set, then the KonigKontext is included on request headers`() {
+        val testServerInterceptor = TestServerInterceptor()
+
+        // Create a fake in process server for Greeter service
+        val serverName = createInProcessServer(testServerInterceptor)
+
+        // Create a client channel and register for automatic graceful shutdown.
+        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
+
+        // Register KonigKontextClientInterceptor on Greeter service client
+        val greeterServiceClientStub =
+            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestProtobufKontextKey)
+
+        // Build KonigKontext which has type HelloRequest
+        val konigKontextValue = HelloRequest.newBuilder().setName("my_custom_field_1234").build()
+
+        GrpcContext.current().withValue(TestProtobufKontextKey.grpcContextKey, konigKontextValue).run {
+            greeterServiceClientStub.sayHello(HelloRequest.getDefaultInstance())
+        }
+
+        assertNotNull(testServerInterceptor.capturedMetadata)
+        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey))
+        assertEquals(
+            konigKontextValue,
+            HelloRequest.parseFrom(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey))
+        )
+        assertEquals(
+            konigKontextValue,
+            TestProtobufKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey)!!)
+        )
+    }
+
+    @Test
+    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the custom KonigKontext is set, then the KonigKontext is included on request headers`() {
+        val testServerInterceptor = TestServerInterceptor()
+
+        // Create a fake in process server for Greeter service
+        val serverName = createInProcessServer(testServerInterceptor)
+
+        // Create a client channel and register for automatic graceful shutdown.
+        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
+
+        // Register KonigKontextClientInterceptor on Greeter service client
+        val greeterServiceClientStub =
+            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestCustomKontextKey)
+
+        // Build KonigKontext which has type HelloRequest
+        val konigKontextValue = "my_custom_value_1234"
+
+        GrpcContext.current().withValue(TestCustomKontextKey.grpcContextKey, konigKontextValue).run {
+            greeterServiceClientStub.sayHello(HelloRequest.getDefaultInstance())
+        }
+
+        assertNotNull(testServerInterceptor.capturedMetadata)
+        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey))
+        assertEquals(
+            konigKontextValue,
+            String(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)!!)
+        )
+        assertEquals(
+            konigKontextValue,
+            TestCustomKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)!!)
+        )
+    }
+
+    @Test
+    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the protobuf KonigKontext is set to the default value, then the default KonigKontext is included on request headers`() {
+        val testServerInterceptor = TestServerInterceptor()
+
+        // Create a fake in process server for Greeter service
+        val serverName = createInProcessServer(testServerInterceptor)
+
+        // Create a client channel and register for automatic graceful shutdown.
+        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
+
+        // Register KonigKontextClientInterceptor on Greeter service client
+        val greeterServiceClientStub =
+            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestProtobufKontextKey)
+
+        GrpcContext.current().withValue(TestProtobufKontextKey.grpcContextKey, TestProtobufKontextKey.defaultValue)
+            .run {
+                greeterServiceClientStub.sayHello(HelloRequest.getDefaultInstance())
+            }
+
+        assertNotNull(testServerInterceptor.capturedMetadata)
+        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey))
+        assertEquals(
+            HelloRequest.getDefaultInstance(),
+            HelloRequest.parseFrom(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey))
+        )
+        assertEquals(
+            HelloRequest.getDefaultInstance(),
+            TestProtobufKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey)!!)
+        )
+    }
+
+    @Test
+    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the custom KonigKontext is set to the default value, then the default KonigKontext is included on request headers`() {
+        val testServerInterceptor = TestServerInterceptor()
+
+        // Create a fake in process server for Greeter service
+        val serverName = createInProcessServer(testServerInterceptor)
+
+        // Create a client channel and register for automatic graceful shutdown.
+        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
+
+        // Register KonigKontextClientInterceptor on Greeter service client
+        val greeterServiceClientStub =
+            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestCustomKontextKey)
+
+        GrpcContext.current().withValue(TestCustomKontextKey.grpcContextKey, TestCustomKontextKey.defaultValue).run {
+            greeterServiceClientStub.sayHello(HelloRequest.getDefaultInstance())
+        }
+
+        assertNotNull(testServerInterceptor.capturedMetadata)
+        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey))
+        assertEquals("", String(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)!!))
+        assertEquals(
+            "",
+            TestCustomKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)!!)
+        )
+    }
 
     private object TestProtobufKontextKey : KonigKontextProtobufKey<HelloRequest>(HelloRequest::class)
 
@@ -49,11 +229,12 @@ class KonigKontextClientInterceptorTest {
         }
     }
 
-    @Test
-    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the protobuf KonigKontext is empty, then the KonigKontextKey default value is included on request headers`() {
-        val testServerInterceptor = TestServerInterceptor()
-
-        // Create a fake in process server
+    /**
+     * Registers in process server for the GreeterImpl on the [grpcCleanup] rule
+     *
+     * @return [String] Registered server name
+     */
+    private fun createInProcessServer(vararg interceptors: ServerInterceptor): String {
         val serverName = InProcessServerBuilder.generateName()
         grpcCleanup.register(
             InProcessServerBuilder.forName(serverName).directExecutor()
@@ -63,195 +244,10 @@ class KonigKontextClientInterceptorTest {
                         responseObserver?.onNext(response)
                         responseObserver?.onCompleted()
                     }
-                }, testServerInterceptor)).build()
+                }, *interceptors)).build()
                 .start()
         )
 
-        // Create a client channel and register for automatic graceful shutdown.
-        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
-        // Register KonigKontextClientInterceptor
-        val blockingStub =
-            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestProtobufKontextKey)
-
-        blockingStub.sayHello(HelloRequest.getDefaultInstance())
-
-        assertNotNull(testServerInterceptor.capturedMetadata)
-        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey))
-        assert(HelloRequest.getDefaultInstance().toByteArray().contentEquals(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey)))
-        assert(TestProtobufKontextKey.valueToBinary(HelloRequest.getDefaultInstance()).contentEquals(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey)))
-    }
-
-    @Test
-    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the custom KonigKontext is empty, then the KonigKontextKey default value is included on request headers`() {
-        val testServerInterceptor = TestServerInterceptor()
-
-        // Create a fake in process server
-        val serverName = InProcessServerBuilder.generateName()
-        grpcCleanup.register(
-            InProcessServerBuilder.forName(serverName).directExecutor()
-                .addService(ServerInterceptors.intercept(object : GreeterImplBase() {
-                    override fun sayHello(request: HelloRequest?, responseObserver: StreamObserver<HelloReply>?) {
-                        val response = HelloReply.getDefaultInstance()
-                        responseObserver?.onNext(response)
-                        responseObserver?.onCompleted()
-                    }
-                }, testServerInterceptor)).build()
-                .start()
-        )
-
-        // Create a client channel and register for automatic graceful shutdown.
-        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
-        // Register KonigKontextClientInterceptor
-        val blockingStub =
-            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestCustomKontextKey)
-
-        blockingStub.sayHello(HelloRequest.getDefaultInstance())
-
-        assertNotNull(testServerInterceptor.capturedMetadata)
-        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey))
-        assert("".toByteArray().contentEquals(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)))
-        assert(TestCustomKontextKey.valueToBinary("").contentEquals(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)))
-    }
-
-    @Test
-    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the protobuf KonigKontext is set, then the KonigKontext is included on request headers`() {
-        val testServerInterceptor = TestServerInterceptor()
-
-        // Create a fake in process server
-        val serverName = InProcessServerBuilder.generateName()
-        grpcCleanup.register(
-            InProcessServerBuilder.forName(serverName).directExecutor()
-                .addService(ServerInterceptors.intercept(object : GreeterImplBase() {
-                    override fun sayHello(request: HelloRequest?, responseObserver: StreamObserver<HelloReply>?) {
-                        val response = HelloReply.getDefaultInstance()
-                        responseObserver?.onNext(response)
-                        responseObserver?.onCompleted()
-                    }
-                }, testServerInterceptor)).build()
-                .start()
-        )
-
-        // Create a client channel and register for automatic graceful shutdown.
-        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
-        // Register KonigKontextClientInterceptor
-        val blockingStub =
-            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestProtobufKontextKey)
-
-        // Build KonigKontext which has type HelloRequest
-        val konigKontextValue = HelloRequest.newBuilder().setName("my_custom_field_1234").build()
-
-        GrpcContext.current().withValue(TestProtobufKontextKey.grpcContextKey, konigKontextValue).run {
-            blockingStub.sayHello(HelloRequest.getDefaultInstance())
-        }
-
-        assertNotNull(testServerInterceptor.capturedMetadata)
-        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey))
-        assertEquals(konigKontextValue, HelloRequest.parseFrom(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey)))
-        assertEquals(konigKontextValue, TestProtobufKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey)!!))
-    }
-
-    @Test
-    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the custom KonigKontext is set, then the KonigKontext is included on request headers`() {
-        val testServerInterceptor = TestServerInterceptor()
-
-        // Create a fake in process server
-        val serverName = InProcessServerBuilder.generateName()
-        grpcCleanup.register(
-            InProcessServerBuilder.forName(serverName).directExecutor()
-                .addService(ServerInterceptors.intercept(object : GreeterImplBase() {
-                    override fun sayHello(request: HelloRequest?, responseObserver: StreamObserver<HelloReply>?) {
-                        val response = HelloReply.getDefaultInstance()
-                        responseObserver?.onNext(response)
-                        responseObserver?.onCompleted()
-                    }
-                }, testServerInterceptor)).build()
-                .start()
-        )
-
-        // Create a client channel and register for automatic graceful shutdown.
-        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
-        // Register KonigKontextClientInterceptor
-        val blockingStub =
-            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestCustomKontextKey)
-
-        // Build KonigKontext which has type HelloRequest
-        val konigKontextValue = "my_custom_value_1234"
-
-        GrpcContext.current().withValue(TestCustomKontextKey.grpcContextKey, konigKontextValue).run {
-            blockingStub.sayHello(HelloRequest.getDefaultInstance())
-        }
-
-        assertNotNull(testServerInterceptor.capturedMetadata)
-        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey))
-        assertEquals(konigKontextValue, String(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)!!))
-        assertEquals(konigKontextValue, TestCustomKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)!!))
-    }
-
-    @Test
-    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the protobuf KonigKontext is set to the default value, then the default KonigKontext is included on request headers`() {
-        val testServerInterceptor = TestServerInterceptor()
-
-        // Create a fake in process server
-        val serverName = InProcessServerBuilder.generateName()
-        grpcCleanup.register(
-            InProcessServerBuilder.forName(serverName).directExecutor()
-                .addService(ServerInterceptors.intercept(object : GreeterImplBase() {
-                    override fun sayHello(request: HelloRequest?, responseObserver: StreamObserver<HelloReply>?) {
-                        val response = HelloReply.getDefaultInstance()
-                        responseObserver?.onNext(response)
-                        responseObserver?.onCompleted()
-                    }
-                }, testServerInterceptor)).build()
-                .start()
-        )
-
-        // Create a client channel and register for automatic graceful shutdown.
-        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
-        // Register KonigKontextClientInterceptor
-        val blockingStub =
-            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestProtobufKontextKey)
-
-        GrpcContext.current().withValue(TestProtobufKontextKey.grpcContextKey, TestProtobufKontextKey.defaultValue).run {
-            blockingStub.sayHello(HelloRequest.getDefaultInstance())
-        }
-
-        assertNotNull(testServerInterceptor.capturedMetadata)
-        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey))
-        assertEquals(HelloRequest.getDefaultInstance(), HelloRequest.parseFrom(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey)))
-        assertEquals(HelloRequest.getDefaultInstance(), TestProtobufKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey)!!))
-    }
-
-    @Test
-    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the custom KonigKontext is set to the default value, then the default KonigKontext is included on request headers`() {
-        val testServerInterceptor = TestServerInterceptor()
-
-        // Create a fake in process server
-        val serverName = InProcessServerBuilder.generateName()
-        grpcCleanup.register(
-            InProcessServerBuilder.forName(serverName).directExecutor()
-                .addService(ServerInterceptors.intercept(object : GreeterImplBase() {
-                    override fun sayHello(request: HelloRequest?, responseObserver: StreamObserver<HelloReply>?) {
-                        val response = HelloReply.getDefaultInstance()
-                        responseObserver?.onNext(response)
-                        responseObserver?.onCompleted()
-                    }
-                }, testServerInterceptor)).build()
-                .start()
-        )
-
-        // Create a client channel and register for automatic graceful shutdown.
-        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
-        // Register KonigKontextClientInterceptor
-        val blockingStub =
-            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestCustomKontextKey)
-
-        GrpcContext.current().withValue(TestCustomKontextKey.grpcContextKey, TestCustomKontextKey.defaultValue).run {
-            blockingStub.sayHello(HelloRequest.getDefaultInstance())
-        }
-
-        assertNotNull(testServerInterceptor.capturedMetadata)
-        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey))
-        assertEquals("", String(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)!!))
-        assertEquals("", TestCustomKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)!!))
+        return serverName
     }
 }
