@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package example.services;
+
+option java_package = "example.services.shared";
+option java_multiple_files = true;
+
+// Context type passed around with KonigKontext
+message AuthContext {
+  string customer_id = 1;
+}
+
+enum GetBalanceResponseStatus {
+  GET_BALANCE_UNSPECIFIED = 0;
+  GET_BALANCE_SUCCESS = 1;
+  GET_BALANCE_NOT_FOUND = 2;
+}
+
