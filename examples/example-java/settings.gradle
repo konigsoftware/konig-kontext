@@ -1,0 +1,3 @@
+rootProject.name = 'example-java'
+
+include(':services:api', ':services:intermediary-service', ':services:balance-service', "shared")

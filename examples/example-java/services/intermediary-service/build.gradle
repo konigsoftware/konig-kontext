@@ -1,0 +1,15 @@
+plugins {
+    id 'konig.kontext.example.java.java-application-conventions'
+}
+
+group = "example.services.intermediary"
+
+application {
+    mainClass.set("example.services.intermediary.Main")
+}
+
+dependencies {
+    implementation(project(':shared'))
+
+    implementation 'org.konigsoftware:konig-kontext:1.0.0'
+}

@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package example.services;
+
+option java_package = "example.services.intermediary";
+option java_multiple_files = true;
+
+import "shared.proto";
+
+service IntermediaryService {
+  rpc getBalance(GetBalanceRequest1)
+      returns (GetBalanceResponse1);
+}
+
+message GetBalanceRequest1 {
+  string user_id = 1;
+};
+
+message GetBalanceResponse1 {
+  GetBalanceResponseStatus status = 1;
+  string balance = 2;
+};

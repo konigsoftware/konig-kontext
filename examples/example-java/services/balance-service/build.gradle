@@ -1,0 +1,16 @@
+plugins {
+    id 'konig.kontext.example.java.java-application-conventions'
+}
+
+group = "example.services.balance"
+
+application {
+    mainClass.set("example.services.balance.Main")
+}
+
+dependencies {
+    implementation(project(':shared'))
+
+    implementation 'org.konigsoftware:konig-kontext:1.0.0'
+    implementation 'org.apache.commons:commons-math3:3.6.1'
+}
