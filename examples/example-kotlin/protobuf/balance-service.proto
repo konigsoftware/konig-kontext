@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package example.services;
+
+option java_package = "example.services.balance";
+option java_multiple_files = true;
+
+import "shared.proto";
+
+service BalanceService {
+  rpc getBalance(GetBalanceRequest2)
+      returns (GetBalanceResponse2);
+}
+
+message GetBalanceRequest2 {
+  string user_id = 1;
+};
+
+message GetBalanceResponse2 {
+  GetBalanceResponseStatus status = 1;
+  string balance = 2;
+};

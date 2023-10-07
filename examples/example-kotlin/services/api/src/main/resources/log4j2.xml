@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+
+    <!--Defines log outs-->
+    <Appenders>
+        <Console name="Text" target="SYSTEM_OUT">
+            <PatternLayout>
+                <pattern>[%d{HH:mm:ss}] %p %C{1}.%M %m %ex%n</pattern>
+            </PatternLayout>
+        </Console>
+    </Appenders>
+
+    <!--Defines all logging with >= INFO-->
+    <Loggers>
+        <Logger name="com.google.*" level="ERROR" additivity="false"/>
+        <Root level="${env:LOG_LEVEL:-INFO} ">
+            <AppenderRef ref="${env:LOG_APPENDER:-Text}"/>
+        </Root>
+    </Loggers>
+</Configuration>
