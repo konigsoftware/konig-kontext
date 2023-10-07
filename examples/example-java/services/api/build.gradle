@@ -1,0 +1,17 @@
+plugins {
+    id 'konig.kontext.example.java.java-application-conventions'
+}
+
+group = "example.services.api"
+
+application {
+    mainClass.set("example.services.api.Main")
+}
+
+dependencies {
+    implementation(project(':shared'))
+
+    implementation 'org.konigsoftware:konig-kontext:1.0.0'
+    implementation 'com.sparkjava:spark-core:2.9.4'
+    implementation 'org.slf4j:slf4j-simple:1.7.21'
+}

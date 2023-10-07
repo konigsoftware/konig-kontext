@@ -1,0 +1,28 @@
+plugins {
+    id 'konig.kontext.example.java.java-library-conventions'
+    id 'com.google.protobuf' version '0.9.4'
+}
+
+group = "example.services.shared"
+
+dependencies {
+    protobuf(files("../protobuf"))
+
+    implementation 'org.konigsoftware:konig-kontext:1.0.0'
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.24.4"
+    }
+    plugins {
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.58.0'
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
