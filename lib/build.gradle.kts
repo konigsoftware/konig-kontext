@@ -14,7 +14,7 @@ publishing {
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.6.21"
+    id("org.jetbrains.kotlin.jvm") version "1.9.10"
     id("maven-publish")
 
     `java-library`
@@ -25,15 +25,15 @@ repositories {
 }
 
 dependencies {
-    implementation("io.grpc:grpc-kotlin-stub:1.3.0")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
-    implementation("com.google.protobuf:protobuf-java-util:3.24.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("io.grpc:grpc-kotlin-stub:1.4.0")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.10")
+    implementation("com.google.protobuf:protobuf-java-util:3.24.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
     testImplementation(kotlin("test"))
-    testImplementation("io.mockk:mockk:1.12.7")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
-    testImplementation("io.grpc:grpc-testing:1.49.0")
+    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("io.grpc:grpc-testing:1.58.0")
     testImplementation("io.grpc:grpc-examples:0.15.0")
 }
 
