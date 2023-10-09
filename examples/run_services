@@ -1,0 +1,125 @@
+#!/bin/bash
+
+function runServices() {
+  local logDir=""
+  local apiPort=""
+  local intermediaryPort=""
+  local balancePort=""
+
+  if [ "$1" == "java" ]; then
+    logDir="logs/example-java-logs"
+    apiPort=8081
+    intermediaryPort=50061
+    balancePort=50062
+  elif [ "$1" == "kotlin" ]; then
+    logDir="logs/example-kotlin-logs"
+    apiPort=8080
+    intermediaryPort=50051
+    balancePort=50052
+  else
+    echo "Invalid argument: $1. Expected one of: [java, kotlin]"
+    exit 1
+  fi
+
+  mkdir -p "$logDir"
+
+  pushd "example-$1" >/dev/null || exit
+
+  echo "Starting $1 services..."
+
+  for module in services/*/; do
+      local moduleName=$(basename "$module")
+      local subProject="${module//\//:}"
+      local logFile="$logDir/$moduleName.log"
+
+      ./gradlew "${subProject}run" &>"../$logFile" &
+  done
+
+  servicesUp=0
+  attempts=0
+  while [ $servicesUp != 1 ] && [ $attempts -lt 40 ]; do
+    echo "Waiting for $1 services to be ready..."
+
+    apiReady=$(curl -X GET "localhost:$apiPort/api-health" | jq -r '.ok')
+    intermediaryReady=$(grpcurl -plaintext -d '{}' "0.0.0.0:$intermediaryPort" grpc.health.v1.Health/Check | jq -r '.status')
+    balanceReady=$(grpcurl -plaintext -d '{}' "0.0.0.0:$balancePort" grpc.health.v1.Health/Check | jq -r '.status')
+
+    if [ "$apiReady" == 'true' ] && [ "$intermediaryReady" == 'SERVING' ] && [ "$balanceReady" == 'SERVING' ]; then
+      servicesUp=1
+    else
+      sleep 5
+      ((attempts++))
+    fi
+  done
+
+  if [ $servicesUp == 1 ]; then
+    echo "All $1 services are ready!"
+  else
+    echo "Reached maximum attempts waiting for $1 services to start"
+    exit 1
+  fi
+
+  popd >/dev/null || exit
+}
+
+function kill_java_processes {
+    # Kill all running java processes
+    for p in $(eval "ps aux | grep java | grep /services | grep -v grep" | awk -F' ' '{print $2}'); do
+        echo "killing $p"
+        kill -9 $p
+    done
+    sleep 1
+    echo "All services killed"
+}
+
+function dump_logs() {
+  pushd logs >/dev/null || exit
+
+  if [ "$1" == "" ] || [ "$1" == "java" ]; then
+    for logFile in example-java-logs/*; do
+     echo "Java $logFile:"
+     cat "$logFile"
+    done
+  fi
+
+  if [ "$1" == "" ] || [ "$1" == "kotlin" ]; then
+      for logFile in example-kotlin-logs/*; do
+        echo "Kotlin $logFile:"
+        cat "$logFile"
+      done
+  fi
+}
+
+function checkDependencies {
+  which grpcurl
+  if [[ "$?" != 0 ]]; then
+    echo "grpcurl is not installed. Please install it with `brew install grpcurl`"
+    exit 1
+  else
+    echo "grpcurl found"
+  fi
+}
+
+case "$1" in
+"java" | "kotlin")
+  checkDependencies
+  kill_java_processes "$1"
+  runServices "$1"
+  ;;
+"all")
+  checkDependencies
+  kill_java_processes
+  runServices "kotlin"
+  runServices "java"
+  ;;
+"kill")
+  kill_java_processes
+  ;;
+"logdump")
+  dump_logs "$2"
+  ;;
+*)
+  echo "Invalid argument: $1. Expected one of: [java, kotlin, all, kill, logdump]"
+  exit 1
+  ;;
+esac

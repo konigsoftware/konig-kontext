@@ -52,5 +52,10 @@ public class ApiHttpServer {
 
             return responseBody.toString();
         });
+
+        Spark.get("/api-health", ((request, response) -> {
+            response.status(200);
+            return "{\"ok\":true}";
+        }));
     }
 }

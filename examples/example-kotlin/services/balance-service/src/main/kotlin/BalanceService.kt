@@ -19,7 +19,7 @@ class BalanceService : BalanceServiceCoroutineImplBase() {
         ("test_customer_id_1859" to "test_user_id_8358") to "89134.12",
         ("test_customer_id_8302" to "test_user_id_9090") to "83.1",
         ("test_customer_id_0909" to "test_user_id_0091") to "1.91",
-        ("test_customer_id_1234" to "test_user_id_8921") to "8310.92",
+        ("test_customer_id_1234" to "test_user_id_8921") to "8310.921",
     )
 
     override suspend fun getBalance(request: GetBalanceRequest2): GetBalanceResponse2 {
