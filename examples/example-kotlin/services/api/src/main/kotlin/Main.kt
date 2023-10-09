@@ -57,6 +57,10 @@ fun main() {
                     else -> call.respond(HttpStatusCode.InternalServerError)
                 }
             }
+
+            get("/api-health") {
+                return@get call.respondText("{\"ok\":true}")
+            }
         }
     }.start(wait = true)
 }

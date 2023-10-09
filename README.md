@@ -6,8 +6,8 @@ only known several RPC's ago in the request lifetime? Hate having to update mult
 pass this value down the stack, leading to new code branches and more unit tests? Konig Kontext was developed for this
 exact frustration.
 
-See https://github.com/konigsoftware/konig-kontext-example-kotlin for a Kotlin example project that implements this
-library. See https://github.com/konigsoftware/konig-kontext-example-java for an equivalent example in Java.
+See https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-kotlin for a Kotlin example project that implements this
+library. See https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-java for an equivalent example in Java.
 
 Installation
 ------------
@@ -263,5 +263,5 @@ request messages seems a bit unnecessary. However, with KonigKontext, you can si
 in the public facing service immediately after authentication, and then all the downstream services from A to E will
 automagically have access to the value on that key.
 
-See https://github.com/konigsoftware/konig-kontext-example-kotlin and https://github.com/konigsoftware/konig-kontext-example-java
+See https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-kotlin and https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-java
 for example projects in both Kotlin and Java that utilize KonigKontext for a situation similar to the one described here.

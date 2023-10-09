@@ -4,6 +4,8 @@ import example.services.balance.BalanceServiceGrpcKt.BalanceServiceCoroutineStub
 import example.services.shared.GlobalAuthContextKey
 import io.grpc.ManagedChannelBuilder
 import io.grpc.ServerBuilder
+import io.grpc.protobuf.services.HealthStatusManager
+import io.grpc.protobuf.services.ProtoReflectionService
 import org.konigsoftware.kontext.KonigKontextServerInterceptor
 import org.konigsoftware.kontext.withKonigKontextInterceptor
 
@@ -18,7 +20,11 @@ fun main() {
     val server = ServerBuilder
         .forPort(50051)
         .addService(IntermediaryService(serviceCClient))
+        // Add KonigKontextInterceptor (required for implementing KonigKontext)
         .intercept(KonigKontextServerInterceptor(GlobalAuthContextKey))
+        // These are added so that tests can ensure the service is running properly. They are not needed for implementing KonigKontext
+        .addService(HealthStatusManager().healthService)
+        .addService(ProtoReflectionService.newInstance())
         .build()
 
     server.start()

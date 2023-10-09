@@ -15,7 +15,7 @@ import org.konigsoftware.kontext.ExampleApiClient.BalanceResponse
 internal class KonigKontextImplementationIT {
     @Nested
     inner class KotlinStackIT {
-        private val localKotlinApiClient = ExampleApiClient("http://localhost:8080")
+        private val localKotlinApiClient = ExampleApiClient("http://127.0.0.1:8080")
 
         @Test
         fun `Given single user id and customer id, when calling example api GET balance on kotlin stack, then the correct balance is returned`() =
@@ -96,8 +96,6 @@ internal class KonigKontextImplementationIT {
                             balanceResponse,
                             "Getting balance for user: $userId and customer: $customerId failed"
                         )
-
-                        println("GOT BALANCE FOR USER: $userId and customer: $customerId balance: ${balanceResponse.balance}")
 
                         requestIndexToExpectedBalanceAndActualBalance[i] = expectedBalance to balanceResponse.balance
                     }

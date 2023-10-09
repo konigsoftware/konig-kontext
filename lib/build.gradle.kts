@@ -16,6 +16,7 @@ publishing {
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.10"
     id("maven-publish")
+    id("com.adarshr.test-logger") version "3.2.0"
 
     `java-library`
 }
