@@ -4,7 +4,7 @@ import example.services.shared.GetBalanceResponseStatus;
 import example.services.shared.GlobalContextKeys;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.math3.util.Pair;
-import org.konigsoftware.kontext.KonigKontext;
+import com.konigsoftware.kontext.KonigKontext;
 
 import java.util.HashMap;
 import java.util.Map;

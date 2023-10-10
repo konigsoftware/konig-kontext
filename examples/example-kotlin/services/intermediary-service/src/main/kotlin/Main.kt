@@ -6,8 +6,8 @@ import io.grpc.ManagedChannelBuilder
 import io.grpc.ServerBuilder
 import io.grpc.protobuf.services.HealthStatusManager
 import io.grpc.protobuf.services.ProtoReflectionService
-import org.konigsoftware.kontext.KonigKontextServerInterceptor
-import org.konigsoftware.kontext.withKonigKontextInterceptor
+import com.konigsoftware.kontext.KonigKontextServerInterceptor
+import com.konigsoftware.kontext.withKonigKontextInterceptor
 
 fun main() {
     println("Starting Intermediary Service...")

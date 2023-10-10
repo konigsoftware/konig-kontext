@@ -3,7 +3,7 @@ package example.services.api;
 import example.services.intermediary.IntermediaryServiceGrpc;
 import example.services.shared.GlobalContextKeys;
 import io.grpc.ManagedChannelBuilder;
-import org.konigsoftware.kontext.KonigKontextClientInterceptor;
+import com.konigsoftware.kontext.KonigKontextClientInterceptor;
 
 public class Main {
     public static void main(String[] args) {

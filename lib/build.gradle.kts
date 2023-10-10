@@ -1,10 +1,10 @@
-group = "org.konigsoftware"
+group = "com.konigsoftware"
 version = "1.0.0"
 
 publishing {
     publications {
         create<MavenPublication>("maven") {
-            groupId = "org.konigsoftware"
+            groupId = "com.konigsoftware"
             artifactId = "konig-kontext"
             version = "1.0.0"
 
@@ -51,7 +51,7 @@ tasks.test {
 tasks.register<Test>("integrationTest") {
     useJUnitPlatform()
     filter {
-        includeTestsMatching("org.konigsoftware.kontext.*IT")
+        includeTestsMatching("com.konigsoftware.kontext.*IT")
         this.isFailOnNoMatchingTests = true
     }
 }

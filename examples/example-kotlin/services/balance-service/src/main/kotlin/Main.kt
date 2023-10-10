@@ -4,7 +4,7 @@ import example.services.shared.GlobalAuthContextKey
 import io.grpc.ServerBuilder
 import io.grpc.protobuf.services.HealthStatusManager
 import io.grpc.protobuf.services.ProtoReflectionService
-import org.konigsoftware.kontext.KonigKontextServerInterceptor
+import com.konigsoftware.kontext.KonigKontextServerInterceptor
 
 fun main() {
     println("Starting Balance Service...")

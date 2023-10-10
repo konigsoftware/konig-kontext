@@ -1,4 +1,4 @@
-package org.konigsoftware.kontext
+package com.konigsoftware.kontext
 
 import com.google.protobuf.Message
 import kotlin.reflect.KClass

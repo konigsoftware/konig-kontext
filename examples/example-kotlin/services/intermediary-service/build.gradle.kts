@@ -11,5 +11,5 @@ plugins {
 dependencies {
     implementation(project(":shared"))
 
-    implementation("org.konigsoftware:konig-kontext:1.0.0")
+    implementation("com.konigsoftware:konig-kontext:1.0.0")
 }

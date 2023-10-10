@@ -1,4 +1,4 @@
-package org.konigsoftware.kontext
+package com.konigsoftware.kontext
 
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -21,7 +21,7 @@ internal class ExampleApiClient(private val baseUrl: String) {
         it
     }).build()
     private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-    private val logger = Logger.getLogger("org.konigsoftware.kontext.ExampleApiClient")
+    private val logger = Logger.getLogger("com.konigsoftware.kontext.ExampleApiClient")
 
     data class BalanceResponse(val balance: String)
 

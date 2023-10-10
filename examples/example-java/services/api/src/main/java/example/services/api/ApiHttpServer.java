@@ -5,7 +5,7 @@ import example.services.intermediary.IntermediaryServiceGrpc;
 import example.services.shared.AuthContext;
 import example.services.shared.GetBalanceResponseStatus;
 import example.services.shared.GlobalContextKeys;
-import org.konigsoftware.kontext.KonigKontext;
+import com.konigsoftware.kontext.KonigKontext;
 import spark.Spark;
 
 public class ApiHttpServer {

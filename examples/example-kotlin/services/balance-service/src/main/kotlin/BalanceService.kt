@@ -4,7 +4,7 @@ import example.services.balance.BalanceServiceGrpcKt.BalanceServiceCoroutineImpl
 import example.services.shared.GetBalanceResponseStatus.GET_BALANCE_NOT_FOUND
 import example.services.shared.GetBalanceResponseStatus.GET_BALANCE_SUCCESS
 import example.services.shared.GlobalAuthContextKey
-import org.konigsoftware.kontext.KonigKontext
+import com.konigsoftware.kontext.KonigKontext
 
 class BalanceService : BalanceServiceCoroutineImplBase() {
     // In-memory database

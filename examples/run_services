@@ -25,6 +25,10 @@ function runServices() {
 
   pushd "example-$1" >/dev/null || exit
 
+  echo "Building project..."
+
+  ./gradlew clean build
+
   echo "Starting $1 services..."
 
   for module in services/*/; do

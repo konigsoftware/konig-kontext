@@ -23,7 +23,7 @@ dependencies {
     // Generates Kotlin and Java code from the proto definitions.
     protobuf(files("../protobuf"))
 
-    implementation("org.konigsoftware:konig-kontext:1.0.0")
+    implementation("com.konigsoftware:konig-kontext:1.0.0")
 }
 
 protobuf {
@@ -42,10 +42,6 @@ protobuf {
 
     generateProtoTasks {
         all().forEach {
-            // https://github.com/google/protobuf-gradle-plugin/issues/331#issuecomment-543333726
-            it.doFirst {
-                delete(it.outputs)
-            }
             it.builtins {
                 id("kotlin")
             }
