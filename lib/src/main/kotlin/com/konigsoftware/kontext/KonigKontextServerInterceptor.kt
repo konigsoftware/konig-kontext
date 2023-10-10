@@ -8,6 +8,9 @@ import io.grpc.ServerCall.Listener
 import io.grpc.ServerCallHandler
 import io.grpc.ServerInterceptor
 
+/**
+ * A [ServerInterceptor] subtype that will register the current KonigKontext before an RPC call.
+ */
 class KonigKontextServerInterceptor<KontextType>(private val konigKontextKey: KonigKontextKey<KontextType>) :
     ServerInterceptor {
     override fun <ReqT : Any?, RespT : Any?> interceptCall(
