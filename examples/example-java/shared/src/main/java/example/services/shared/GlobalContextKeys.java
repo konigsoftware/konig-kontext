@@ -1,7 +1,7 @@
 package example.services.shared;
 
-import org.konigsoftware.kontext.KonigKontextKey;
-import org.konigsoftware.kontext.KonigKontextProtobufKey;
+import com.konigsoftware.kontext.KonigKontextKey;
+import com.konigsoftware.kontext.KonigKontextProtobufKey;
 
 import java.nio.charset.StandardCharsets;
 

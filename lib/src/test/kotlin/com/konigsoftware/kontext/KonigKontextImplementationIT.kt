@@ -1,4 +1,4 @@
-package org.konigsoftware.kontext
+package com.konigsoftware.kontext
 
 import kotlin.random.Random
 import kotlin.test.assertEquals
@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.konigsoftware.kontext.ExampleApiClient.BalanceResponse
+import com.konigsoftware.kontext.ExampleApiClient.BalanceResponse
 
 internal class KonigKontextImplementationIT {
     @Nested

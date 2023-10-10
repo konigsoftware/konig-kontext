@@ -15,9 +15,9 @@ import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
-import org.konigsoftware.kontext.KonigKontext
-import org.konigsoftware.kontext.withKonigKontext
-import org.konigsoftware.kontext.withKonigKontextInterceptor
+import com.konigsoftware.kontext.KonigKontext
+import com.konigsoftware.kontext.withKonigKontext
+import com.konigsoftware.kontext.withKonigKontextInterceptor
 
 fun main() {
     println("Starting API...")

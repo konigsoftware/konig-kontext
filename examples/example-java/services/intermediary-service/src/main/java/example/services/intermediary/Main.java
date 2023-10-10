@@ -6,8 +6,8 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.ServerBuilder;
 import io.grpc.protobuf.services.HealthStatusManager;
 import io.grpc.protobuf.services.ProtoReflectionService;
-import org.konigsoftware.kontext.KonigKontextClientInterceptor;
-import org.konigsoftware.kontext.KonigKontextServerInterceptor;
+import com.konigsoftware.kontext.KonigKontextClientInterceptor;
+import com.konigsoftware.kontext.KonigKontextServerInterceptor;
 
 public class Main {
     public static void main(String[] args) {

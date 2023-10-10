@@ -1,4 +1,4 @@
-package org.konigsoftware.kontext
+package com.konigsoftware.kontext
 
 import io.grpc.Metadata
 import io.grpc.Metadata.Key

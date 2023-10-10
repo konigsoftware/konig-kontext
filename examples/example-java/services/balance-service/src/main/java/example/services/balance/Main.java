@@ -3,7 +3,7 @@ package example.services.balance;
 import example.services.shared.GlobalContextKeys;
 import io.grpc.ServerBuilder;
 import io.grpc.protobuf.services.ProtoReflectionService;
-import org.konigsoftware.kontext.KonigKontextServerInterceptor;
+import com.konigsoftware.kontext.KonigKontextServerInterceptor;
 import io.grpc.protobuf.services.HealthStatusManager;
 
 public class Main {
