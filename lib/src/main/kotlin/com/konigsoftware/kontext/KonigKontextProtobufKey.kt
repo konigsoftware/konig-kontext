@@ -3,6 +3,11 @@ package com.konigsoftware.kontext
 import com.google.protobuf.Message
 import kotlin.reflect.KClass
 
+/**
+ * It can be a good practice to use a protobuf [Message] as the type of the value associated with your [KonigKontextKey].
+ * Using a protobuf message allows you to have a global type definition for your context value, while also making it
+ * easy to make updates to the type without shooting yourself in the foot. See further [documentation here](https://github.com/konigsoftware/konig-kontext#protobuf-message-based-type).
+ */
 open class KonigKontextProtobufKey<KontextValue : Message> private constructor(valueClass: Class<KontextValue>) :
     KonigKontextKey<KontextValue>() {
     constructor(valueClass: KClass<KontextValue>) : this(valueClass.java)

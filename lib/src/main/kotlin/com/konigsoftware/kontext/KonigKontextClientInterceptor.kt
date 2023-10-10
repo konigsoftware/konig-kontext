@@ -10,6 +10,10 @@ import io.grpc.Metadata
 import io.grpc.MethodDescriptor
 import io.grpc.stub.AbstractStub
 
+/**
+ * A [ClientInterceptor] subtype that will send the current KonigKontext to the corresponding server via gRPC headers.
+ * See the [documentation here](https://github.com/konigsoftware/konig-kontext#2-client-side-setup).
+ */
 class KonigKontextClientInterceptor<KontextType>(private val konigKontextKey: KonigKontextKey<KontextType>) :
     ClientInterceptor {
     override fun <ReqT : Any?, RespT : Any?> interceptCall(
@@ -35,5 +39,8 @@ class KonigKontextClientInterceptor<KontextType>(private val konigKontextKey: Ko
     }
 }
 
+/**
+ * Registers a [KonigKontextClientInterceptor] as an interceptor on this stub.
+ */
 fun <T : AbstractStub<T>, KontextType> T.withKonigKontextInterceptor(konigKontextKey: KonigKontextKey<KontextType>): T =
     withInterceptors(KonigKontextClientInterceptor(konigKontextKey))
