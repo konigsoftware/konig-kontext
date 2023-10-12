@@ -23,7 +23,7 @@ dependencies {
     // Generates Kotlin and Java code from the proto definitions.
     protobuf(files("../protobuf"))
 
-    implementation("com.konigsoftware:konig-kontext:1.0.0")
+    implementation("com.konigsoftware:konig-kontext:1.1.0")
 }
 
 protobuf {

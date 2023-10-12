@@ -1,5 +1,5 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.6.21"
+    id("org.jetbrains.kotlin.jvm") version "1.7.21"
     id("maven-publish")
     id("com.adarshr.test-logger") version "3.2.0"
     id("org.jetbrains.dokka") version "1.9.0"
@@ -17,8 +17,8 @@ java {
 }
 
 dependencies {
-    implementation("io.grpc:grpc-kotlin-stub:1.3.1")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.21")
+    implementation("io.grpc:grpc-kotlin-stub:1.4.0")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.21")
     implementation("com.google.protobuf:protobuf-java-util:3.24.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 

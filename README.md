@@ -20,7 +20,7 @@ Installation
 Add the following to your `build.gradle.kts`:
 
 ```kotlin
-implementation("com.konigsoftware:konig-kontext:1.0.0")
+implementation("com.konigsoftware:konig-kontext:1.1.0")
 ```
 </details>
 
@@ -30,7 +30,7 @@ implementation("com.konigsoftware:konig-kontext:1.0.0")
 Add the following to your `build.gradle`:
 
 ```groovy
-implementation 'com.konigsoftware:konig-kontext:1.0.0'
+implementation 'com.konigsoftware:konig-kontext:1.1.0'
 ```
 </details>
 
