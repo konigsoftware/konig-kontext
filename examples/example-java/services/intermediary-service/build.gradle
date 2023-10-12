@@ -11,5 +11,5 @@ application {
 dependencies {
     implementation(project(':shared'))
 
-    implementation 'com.konigsoftware:konig-kontext:1.0.0'
+    implementation 'com.konigsoftware:konig-kontext:1.1.0'
 }
