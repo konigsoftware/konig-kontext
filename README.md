@@ -1,6 +1,8 @@
 Konig Kontext - A globally shared context for JVM based gRPC microservice architectures
 ====================================================================================
 
+![Gradle Build Status](https://github.com/konigsoftware/konig-kontext/actions/workflows/build.yaml/badge.svg?query=branch=main)
+
 Do you have a gRPC microservices architecture? Have you ever needed a value deep in your call stack but the value is
 only known several RPC's ago in the request lifetime? Hate having to update multiple RPC requests/responses in order to
 pass this value down the stack, leading to new code branches and more unit tests? Konig Kontext was developed for this
