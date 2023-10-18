@@ -77,7 +77,7 @@ publishing {
                 url.set("https://github.com/konigsoftware/konig-kontext")
 
                 name.set("Konig Kontext")
-                description.set("A globally shared context for JVM based gRPC microservices")
+                description.set("A globally shared, request scoped, context for JVM based gRPC microservices")
 
                 scm {
                     connection.set("scm:git:https://github.com/konigsoftware/konig-kontext.git")

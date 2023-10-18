@@ -1,17 +1,15 @@
-Konig Kontext - A globally shared context for JVM based gRPC microservice architectures
+Konig Kontext - A globally shared, request scoped, context for JVM based gRPC microservices
 ====================================================================================
 
 [![Gradle Build Status](https://github.com/konigsoftware/konig-kontext/actions/workflows/build.yaml/badge.svg?query=branch=main)](https://github.com/konigsoftware/konig-kontext/actions/workflows/build.yaml?query=branch%3Amain)
 
 [![konig-kontext](https://img.shields.io/maven-central/v/com.konigsoftware/konig-kontext.svg?label=konig-kontext)](https://central.sonatype.com/search?q=com.konigsoftware%3Akonig-kontext&smo=true)
 
-Do you have a gRPC microservices architecture? Have you ever needed a value deep in your call stack but the value is
-only known several RPC's ago in the request lifetime? Hate having to update multiple RPC requests/responses in order to
-pass this value down the stack, leading to new code branches and more unit tests? Konig Kontext was developed for this
-exact frustration.
+A request context propagation framework which can carry values across gRPC microservice boundaries. Example context values might include:
+- Security principals, or user credentials and identifiers. Add a user credential to the KonigKontext early in a request lifetime, and later access the credential from a different microservice.
+- Distributed tracing information. Add a request trace id to the KonigKontext upon receiving a request and later access that id in any downstream microservice. 
 
-See https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-kotlin for a Kotlin example project that implements this
-library. See https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-java for an equivalent example in Java.
+Konig Kontext is built to support any type of context value, so it can be extended to fit _your_ specific use cases as well. 
 
 Installation
 ------------
@@ -47,21 +45,18 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>com.konigsoftware</groupId>
     <artifactId>konig-kontext</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
 Setup
 -----
 
-This library allows you to define and pass around any arbitrary context between all of your microservices. The context
-can be of any type you like, as long as you can provide parsers to convert the type to and from a binary format.
-However, it is a recommended practice to use a protobuf `Message` to define the context type. Examples for using both a
-protobuf `Message` based KonigKontext and a custom KonigKontext will be explained below:
-
 ### 1. Create KonigKontextKey
 
-First define an object that extends `KonigKontextKey` in a shared location and implement the interface. **All of your microservices should have access to this key**.
+KonigKontext values are indexed by a `KonigKontextKey`. To define a key, create an object that extends `KonigKontextKey` and implement the interface. This object should live in a shared package
+accessible to all of your microservices.
+
 The following examples define a key with a value of type `String` in both Kotlin and Java, although you can use _any_ type you like instead:
 
 <details open>
@@ -106,13 +101,9 @@ public class GlobalContextKeys {
 
 #### Protobuf Message Based Type:
 
-It can be a good practice to use a protobuf message as the type of the value associated with your `KonigKontextKey`. Using a protobuf message
-allows you to have a global type definition for your context value, while also making it easy to make updates to the type without shooting yourself
-in the foot. 
-
-This library contains special helpers to encourage using a protobuf message. As explained above, we still need to define an object 
-that extends `KonigKontextKey` in a global location, but we can use the helper class `KonigKontextProtobufKey` to make this a bit easier.
-The following examples define a key with a value of type `MyContextMessage`, where `MyContextMessage` extends `com.google.protobuf.Message`:
+Using a protobuf message to type your Konig Kontext value is a good practice, as it allows for type changes in a backwards-compatible way. 
+There's a helper class, `KonigKontextProtobufKey`, that makes this easier. The following examples define a key with a 
+value of type `MyContextMessage`, where `MyContextMessage` extends `com.google.protobuf.Message`:
 
 <details open>
 <summary>Kotlin</summary>
@@ -132,12 +123,10 @@ public class GlobalContextKeys {
 ```
 </details>
 
-Again, all of your microservices should have access to the key defined above.
-
 ### 2. Client side setup:
 
-The client side setup just has one step. Simply add the `KonigKontextClientInterceptor` to all of your gRPC clients and
-pass in your previously defined `KonigKontextKey`:
+Include the `KonigKontextClientInterceptor` in all gRPC clients where you want to propagate the current `KonigKontext`. 
+Provide your previously defined `KonigKontextKey` to the constructor:
 
 <details open>
 <summary>Kotlin</summary>
@@ -164,8 +153,8 @@ MyServiceBlockingStub myServiceClient = MyServiceGrpc
 
 ### 3. Server side setup:
 
-The server side setup also just has one step. Simply add the `KonigKontextServerInterceptor` to all of your gRPC servers
-and again pass in your previously defined `KonigKontextKey`:
+Include the `KonigKontextServerInterceptor` in all gRPC servers that require access to the `KonigKontext`. Provide your 
+previously defined `KonigKontextKey` to the constructor.
 
 <details open>
 <summary>Kotlin</summary>
@@ -198,12 +187,12 @@ Server myServer = ServerBuilder
 ```
 </details>
 
-That's it! No more setup required. See the Usage section below for next steps on actually using the library.
-
 Usage
 -----
 
-### Setting value for KonigKontextKey:
+To set and get `KonigKontext` values, follow these steps:
+
+### Setting value:
 
 <details open>
 <summary>Kotlin</summary>
@@ -211,6 +200,9 @@ Usage
 ```kotlin
 withKonigKontext(KonigKontext.withValue(MyContextKey, /* ADD VALUE HERE */)) {
     // Remaining code path that will have access to the updated KonigKontext
+
+    // Any client stub RPC called from within this lambda will automatically give that RPC
+    // access to the current KonigKontext. 
 }
 ```
 </details>
@@ -220,15 +212,20 @@ withKonigKontext(KonigKontext.withValue(MyContextKey, /* ADD VALUE HERE */)) {
 
 ```java
 KonigKontext.withValue(GlobalContextKeys.MY_CONTEXT_KEY, /* set value here */).run(() -> {
-    // Remaining code path that will have access to the updated KonigKontext 
+    // Remaining code path that will have access to the updated KonigKontext
+    
+    // Any client stub RPC called from within this lambda will automatically give that RPC
+    // access to the current KonigKontext.    
 })
 ```
 </details>
 
-### Getting value for KonigKontextKey:
+### Getting value:
 
-The code within the closure provided to `withKonigKontext` and `run` (see above) as well as _any_ downstream RPC's called from within that
-closure will have access to the value keyed by your `KonigKontextKey`. To access the value from any downstream RPC simply call:
+Any KonigKontext scoped closure (see `withKonigKontext` and `run` above) will have access to get a KonigKontext value. Any
+downstream microservice RPC called from within a KonigKontext scoped closure can also access a previously set KonigKontext value.
+
+Access a KonigKontext value:
 
 <details open>
 <summary>Kotlin</summary>
@@ -247,25 +244,90 @@ KonigKontext.getValue(GlobalContextKeys.MY_CONTEXT_KEY)
 ```
 </details>
 
-### Use Cases:
+### Usage Example:
 
-The true value add of this library is the ability to access a KonigKontext value N number of RPC's after it has been is set.
-To explain this lets look at an example use case. Assume you have a typical api gateway microservices architecture with
-one public facing service and several internal microservices that are not publicly accessible. The public facing service
-performs authentication on incoming requests before routing the requests to downstream microservices for further
-processing.
+Let's consider two services, ServiceA and ServiceB, running in separate containers. ServiceA handles an incoming request and then calls ServiceB:
 
-Since the public facing service performs authentication on incoming requests, it likely has access to the user id making
-the request or some other authentication related data. After authenticating, assume a downstream RPC is called on a
-different microservice, lets call it service A. Now what if service A calls another RPC on service B which calls another
-RPC on service C and so on until maybe we get to service E where we now need access to the user id.
+<details open>
+<summary>Kotlin</summary>
 
-Without KonigKontext you would have to add the user id to all the RPC request messages in between the public service and
-service E. All these changes might require new unit tests and thorough code reviews, using up development time.
-Additionally, the user id might not be needed on the RPC's between service A and service D, and so including it on the
-request messages seems a bit unnecessary. However, with KonigKontext, you can simply set the user id for a `KonigKontextKey` 
-in the public facing service immediately after authentication, and then all the downstream services from A to E will
-automagically have access to the value on that key.
+```kotlin
+// Service A:
+class ServiceA {
+    val serviceBClient = ServiceBCoroutineStub(myManagedChannel)
+        .withInterceptors(KonigKontextClientInterceptor(MyContextKey)) 
+    
+    suspend fun handleRequest(userId: String): Response {
+        return withKonigKontext(KonigKontext.withValue(MyKontextKey, userId)) {
+            println("USER ID: ${KonigKontext.getValue(MyContextKey)}")
+            
+            val serviceBResponse = serviceBClient.doSomething(doSomethingRequest { })
+            
+            Response(serviceBResponse)
+        }
+    }
+}
+```
+```kotlin
+// Service B:
+class ServiceB : ServiceBCoroutineImplBase() {
+    override suspend fun doSomething(DoSomethingRequest: request): Response {
+        val userId = KonigKontext.getValue(MyContextKey)
+        
+        println("USER ID: $userId")
+        
+        return Response()
+    }
+}
+```
+</details>
 
-See https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-kotlin and https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-java
-for example projects in both Kotlin and Java that utilize KonigKontext for a situation similar to the one described here.
+<details>
+<summary>Java</summary>
+
+```java
+// Service A:
+public class ServiceA {
+    var serviceBClient = ServiceBGrpc.newBlockingStub(myManagedChannel)
+        .withInterceptors(new KonigKontextClientInterceptor<>(GlobalContextKeys.MY_CONTEXT_KEY)) 
+    
+    public Response handleRequest(String userId) {
+        var responseBuilder = Response.builder();
+        
+        KonigKontext.withValue(GlobalContextKeys.MY_CONTEXT_KEY, userId).run(() -> {
+            System.out.println("USER ID: " + userId);
+            
+            var getBalanceResponse = serviceBClient.doSomething(DoSomethingRequest.newBuilder().build());
+            
+            responseBuilder.setResponse(getBalanceResponse);
+        });
+        
+        return responseBuilder.build(); 
+    }
+}
+```
+```java
+// Service B:
+public class ServiceB extends ServiceBImplBase {
+    @Override
+    public void doSomething(DoSomethingRequest request, StreamObserver<DoSomethingResponse> responseObserver) {
+        var userId = KonigKontext.getValue(MyContextKey);
+        
+        println("USER ID: " + userId);
+
+        responseObserver.onNext(DoSomethinResponse.newBuilder().build());
+        responseObserver.onCompleted();
+    }
+}
+```
+</details>
+
+Calling `ServiceA.handleRequest("some_user_id")` would first print: `USER ID: some_user_id` in ServiceA and then also in ServiceB.
+Since `serviceBClient.doSomething()` is called from within a KonigKontext scoped closure, the current KonigKontext is automatically propagated
+to ServiceB, even though the two services are running in entirely separate containers.
+
+### Full Examples:
+
+See full example implementations in:
+- [Kotlin](https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-kotlin)
+- [Java](https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-java) 
