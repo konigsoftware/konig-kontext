@@ -330,4 +330,10 @@ to ServiceB, even though the two services are running in entirely separate conta
 
 See full example implementations in:
 - [Kotlin](https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-kotlin)
-- [Java](https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-java) 
+- [Java](https://github.com/konigsoftware/konig-kontext/tree/main/examples/example-java)
+
+### News:
+
+As seen on [HackerNews!](https://news.ycombinator.com/item?id=37934439)
+
+<img width="823" alt="Screenshot 2023-10-18 at 4 25 51 PM" src="https://github.com/konigsoftware/konig-kontext/assets/19672892/d863008d-1373-4637-93d3-4397a7997771">
