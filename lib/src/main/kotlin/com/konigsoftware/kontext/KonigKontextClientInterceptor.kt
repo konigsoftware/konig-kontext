@@ -14,7 +14,7 @@ import io.grpc.stub.AbstractStub
  * A [ClientInterceptor] subtype that will send the current KonigKontext to the corresponding server via gRPC headers.
  * See the [documentation here](https://github.com/konigsoftware/konig-kontext#2-client-side-setup).
  */
-class KonigKontextClientInterceptor<KontextType>(private val konigKontextKey: KonigKontextKey<KontextType>) :
+class KonigKontextClientInterceptor<KontextType>(private vararg val konigKontextKeys: KonigKontextKey<KontextType>) :
     ClientInterceptor {
     override fun <ReqT : Any?, RespT : Any?> interceptCall(
         method: MethodDescriptor<ReqT, RespT>?,
@@ -22,10 +22,12 @@ class KonigKontextClientInterceptor<KontextType>(private val konigKontextKey: Ko
         next: Channel?
     ): ClientCall<ReqT, RespT> = object : SimpleForwardingClientCall<ReqT, RespT>(next?.newCall(method, callOptions)) {
         override fun start(responseListener: Listener<RespT>?, headers: Metadata?) {
-            headers?.put(
-                konigKontextKey.grpcHeaderKey,
-                konigKontextKey.valueToBinary(KonigKontext.getValue(konigKontextKey))
-            )
+            konigKontextKeys.forEach {
+                headers?.put(
+                    it.grpcHeaderKey,
+                    it.valueToBinary(KonigKontext.getValue(it))
+                )
+            }
 
             super.start(
                 object : SimpleForwardingClientCallListener<RespT>(responseListener) {
@@ -42,5 +44,5 @@ class KonigKontextClientInterceptor<KontextType>(private val konigKontextKey: Ko
 /**
  * Registers a [KonigKontextClientInterceptor] as an interceptor on this stub.
  */
-fun <T : AbstractStub<T>, KontextType> T.withKonigKontextInterceptor(konigKontextKey: KonigKontextKey<KontextType>): T =
-    withInterceptors(KonigKontextClientInterceptor(konigKontextKey))
+fun <T : AbstractStub<T>, KontextType> T.withKonigKontextInterceptor(vararg konigKontextKeys: KonigKontextKey<KontextType>): T =
+    withInterceptors(KonigKontextClientInterceptor(*konigKontextKeys))

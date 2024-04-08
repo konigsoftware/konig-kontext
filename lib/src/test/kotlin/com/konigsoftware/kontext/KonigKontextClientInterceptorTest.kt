@@ -81,7 +81,7 @@ class KonigKontextClientInterceptorTest {
     }
 
     @Test
-    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the protobuf KonigKontext is set, then the KonigKontext is included on request headers`() {
+    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and a single protobuf KonigKontext is set, then the KonigKontext is included on request headers`() {
         val testServerInterceptor = TestServerInterceptor()
 
         // Create a fake in process server for Greeter service
@@ -114,7 +114,51 @@ class KonigKontextClientInterceptorTest {
     }
 
     @Test
-    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and the custom KonigKontext is set, then the KonigKontext is included on request headers`() {
+    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and multiple protobuf KonigKontexts are set, then all KonigKontexts are included on request headers`() {
+        val testServerInterceptor = TestServerInterceptor()
+
+        // Create a fake in process server for Greeter service
+        val serverName = createInProcessServer(testServerInterceptor)
+
+        // Create a client channel and register for automatic graceful shutdown.
+        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
+
+        // Register KonigKontextClientInterceptor on Greeter service client
+        val greeterServiceClientStub =
+            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestProtobufKontextKey, TestProtobufKontextKey2)
+
+        // Build KonigKontext which has type HelloRequest
+        val konigKontext1Value = HelloRequest.newBuilder().setName("my_custom_field_1234").build()
+        val konigKontext2Value = HelloRequest.newBuilder().setName("my_other_custom_field_9876").build()
+
+        GrpcContext.current().withValue(TestProtobufKontextKey.grpcContextKey, konigKontext1Value).withValue(TestProtobufKontextKey2.grpcContextKey, konigKontext2Value).run {
+            greeterServiceClientStub.sayHello(HelloRequest.getDefaultInstance())
+        }
+
+        assertNotNull(testServerInterceptor.capturedMetadata)
+        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey))
+        assertEquals(
+            konigKontext1Value,
+            HelloRequest.parseFrom(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey))
+        )
+        assertEquals(
+            konigKontext1Value,
+            TestProtobufKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey.grpcHeaderKey)!!)
+        )
+
+        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey2.grpcHeaderKey))
+        assertEquals(
+            konigKontext2Value,
+            HelloRequest.parseFrom(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey2.grpcHeaderKey))
+        )
+        assertEquals(
+            konigKontext2Value,
+            TestProtobufKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestProtobufKontextKey2.grpcHeaderKey)!!)
+        )
+    }
+
+    @Test
+    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and a single custom KonigKontext is set, then the KonigKontext is included on request headers`() {
         val testServerInterceptor = TestServerInterceptor()
 
         // Create a fake in process server for Greeter service
@@ -143,6 +187,50 @@ class KonigKontextClientInterceptorTest {
         assertEquals(
             konigKontextValue,
             TestCustomKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)!!)
+        )
+    }
+
+    @Test
+    fun `Given downstream rpc, when calling rpc from KonigKontext intercepted client and multiple custom KonigKontexts are set, then the KonigKontext is included on request headers`() {
+        val testServerInterceptor = TestServerInterceptor()
+
+        // Create a fake in process server for Greeter service
+        val serverName = createInProcessServer(testServerInterceptor)
+
+        // Create a client channel and register for automatic graceful shutdown.
+        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
+
+        // Register KonigKontextClientInterceptor on Greeter service client
+        val greeterServiceClientStub =
+            GreeterGrpc.newBlockingStub(channel).withKonigKontextInterceptor(TestCustomKontextKey, TestCustomKontextKey2)
+
+        // Build KonigKontext which has type HelloRequest
+        val konigKontextValue = "my_custom_value_1234"
+        val konigKontextValue2 = "my_other_custom_value_9876"
+
+        GrpcContext.current().withValue(TestCustomKontextKey.grpcContextKey, konigKontextValue).withValue(TestCustomKontextKey2.grpcContextKey, konigKontextValue2).run {
+            greeterServiceClientStub.sayHello(HelloRequest.getDefaultInstance())
+        }
+
+        assertNotNull(testServerInterceptor.capturedMetadata)
+        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey))
+        assertEquals(
+            konigKontextValue,
+            String(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)!!)
+        )
+        assertEquals(
+            konigKontextValue,
+            TestCustomKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey.grpcHeaderKey)!!)
+        )
+
+        assertNotNull(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey2.grpcHeaderKey))
+        assertEquals(
+            konigKontextValue2,
+            String(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey2.grpcHeaderKey)!!)
+        )
+        assertEquals(
+            konigKontextValue2,
+            TestCustomKontextKey.valueFromBinary(testServerInterceptor.capturedMetadata!!.get(TestCustomKontextKey2.grpcHeaderKey)!!)
         )
     }
 
@@ -206,7 +294,17 @@ class KonigKontextClientInterceptorTest {
 
     private object TestProtobufKontextKey : KonigKontextProtobufKey<HelloRequest>(HelloRequest::class)
 
+    private object TestProtobufKontextKey2 : KonigKontextProtobufKey<HelloRequest>(HelloRequest::class)
+
     private object TestCustomKontextKey : KonigKontextKey<String>() {
+        override val defaultValue = ""
+
+        override fun valueFromBinary(binaryValue: ByteArray): String = String(binaryValue)
+
+        override fun valueToBinary(value: String): ByteArray = value.toByteArray()
+    }
+
+    private object TestCustomKontextKey2 : KonigKontextKey<String>() {
         override val defaultValue = ""
 
         override fun valueFromBinary(binaryValue: ByteArray): String = String(binaryValue)

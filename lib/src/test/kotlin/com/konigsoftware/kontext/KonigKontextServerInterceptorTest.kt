@@ -118,7 +118,7 @@ class KonigKontextServerInterceptorTest {
     }
 
     @Test
-    fun `Given KonigKontext intercepted server, when calling server RPC with gRPC header set, then the expected protobuf KonigKontext value is set on the GrpcContext`() {
+    fun `Given KonigKontext intercepted server, when calling server RPC with a single gRPC header set, then the expected protobuf KonigKontext value is set on the GrpcContext`() {
         lateinit var capturedKonigKontext: HelloRequest
 
         // Create a fake in process server with KonigKontextServerInterceptor
@@ -144,7 +144,41 @@ class KonigKontextServerInterceptorTest {
     }
 
     @Test
-    fun `Given KonigKontext intercepted server, when calling server RPC with gRPC header set, then the expected custom KonigKontext value is set on the GrpcContext`() {
+    fun `Given KonigKontext intercepted server, when calling server RPC with multiple gRPC headers set, then all expected protobuf KonigKontext values are set on the GrpcContext`() {
+        lateinit var capturedKonigKontext1: HelloRequest
+        lateinit var capturedKonigKontext2: HelloRequest
+
+        // Create a fake in process server with KonigKontextServerInterceptor
+        val serverName = createKonigKontextInterceptedInProcessServer(TestProtobufKontextKey, TestProtobufKontextKey2, {
+            capturedKonigKontext1 = it
+        }, {
+            capturedKonigKontext2 = it
+        })
+
+        // Create a client channel and register for automatic graceful shutdown.
+        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
+
+        // Create client stub with test client interceptor used to set headers. Set Konig Kontext
+        val headers = Metadata()
+        headers.put(
+            TestProtobufKontextKey.grpcHeaderKey,
+            TestProtobufKontextKey.valueToBinary(HelloRequest.newBuilder().setName("test_1234").build())
+        )
+        headers.put(
+            TestProtobufKontextKey2.grpcHeaderKey,
+            TestProtobufKontextKey2.valueToBinary(HelloRequest.newBuilder().setName("other_test_9876").build())
+        )
+        val greeterServiceBlockingStub =
+            GreeterGrpc.newBlockingStub(channel).withInterceptors(TestClientInterceptor(headers))
+
+        greeterServiceBlockingStub.sayHello(HelloRequest.getDefaultInstance())
+
+        assertEquals(HelloRequest.newBuilder().setName("test_1234").build(), capturedKonigKontext1)
+        assertEquals(HelloRequest.newBuilder().setName("other_test_9876").build(), capturedKonigKontext2)
+    }
+
+    @Test
+    fun `Given KonigKontext intercepted server, when calling server RPC with a single gRPC header set, then the expected custom KonigKontext value is set on the GrpcContext`() {
         lateinit var capturedKonigKontext: String
 
         // Create a fake in process server with KonigKontextServerInterceptor
@@ -167,6 +201,40 @@ class KonigKontextServerInterceptorTest {
         greeterServiceBlockingStub.sayHello(HelloRequest.getDefaultInstance())
 
         assertEquals("test_1234", capturedKonigKontext)
+    }
+
+    @Test
+    fun `Given KonigKontext intercepted server, when calling server RPC with multiple gRPC headers set, then the expected custom KonigKontext values are set on the GrpcContext`() {
+        lateinit var capturedKonigKontext: String
+        lateinit var capturedKonigKontext2: String
+
+        // Create a fake in process server with KonigKontextServerInterceptor
+        val serverName = createKonigKontextInterceptedInProcessServer(TestCustomKontextKey, TestCustomKontextKey2, {
+            capturedKonigKontext = it
+        }, {
+            capturedKonigKontext2 = it
+        })
+
+        // Create a client channel and register for automatic graceful shutdown.
+        val channel = grpcCleanup.register(InProcessChannelBuilder.forName(serverName).directExecutor().build())
+        // Create client stub with test client interceptor used to set headers. Set Konig Kontext
+
+        val headers = Metadata()
+        headers.put(
+            TestCustomKontextKey.grpcHeaderKey,
+            TestCustomKontextKey.valueToBinary("test_1234")
+        )
+        headers.put(
+            TestCustomKontextKey2.grpcHeaderKey,
+            TestCustomKontextKey2.valueToBinary("other_test_9876")
+        )
+        val greeterServiceBlockingStub =
+            GreeterGrpc.newBlockingStub(channel).withInterceptors(TestClientInterceptor(headers))
+
+        greeterServiceBlockingStub.sayHello(HelloRequest.getDefaultInstance())
+
+        assertEquals("test_1234", capturedKonigKontext)
+        assertEquals("other_test_9876", capturedKonigKontext2)
     }
 
 
@@ -195,8 +263,17 @@ class KonigKontextServerInterceptorTest {
     }
 
     private object TestProtobufKontextKey : KonigKontextProtobufKey<HelloRequest>(HelloRequest::class)
+    private object TestProtobufKontextKey2 : KonigKontextProtobufKey<HelloRequest>(HelloRequest::class)
 
     private object TestCustomKontextKey : KonigKontextKey<String>() {
+        override val defaultValue = ""
+
+        override fun valueFromBinary(binaryValue: ByteArray): String = String(binaryValue)
+
+        override fun valueToBinary(value: String): ByteArray = value.toByteArray()
+    }
+
+    private object TestCustomKontextKey2 : KonigKontextKey<String>() {
         override val defaultValue = ""
 
         override fun valueFromBinary(binaryValue: ByteArray): String = String(binaryValue)
@@ -255,4 +332,38 @@ class KonigKontextServerInterceptorTest {
 
         return serverName
     }
+
+    /**
+     * Registers in process server for the GreeterImpl on the [grpcCleanup] rule with multiple KonigKontextKey's.
+     *
+     * @param konigKontextKey1 First KonigKontextKey that will be passed into the KonigKontextServerInterceptor registered on this server
+     * @param konigKontextKey2 Second KonigKontextKey that will be passed into the KonigKontextServerInterceptor registered on this server
+     * @param setter1 function that takes in the captured KonigKontext value for the [konigKontextKey1] that can be used to set a value in a test for assertions
+     * @param setter2 function that takes in the captured KonigKontext value for the [konigKontextKey2] that can be used to set a value in a test for assertions
+     *
+     * @return [String] Registered server name
+     */
+    private fun <T> createKonigKontextInterceptedInProcessServer(konigKontextKey1: KonigKontextKey<T>, konigKontextKey2: KonigKontextKey<T>, setter1: (T) -> Unit = {}, setter2: (T) -> Unit = {}): String {
+        val serverName = InProcessServerBuilder.generateName()
+        grpcCleanup.register(
+            InProcessServerBuilder.forName(serverName).directExecutor()
+                .addService(ServerInterceptors.intercept(object : GreeterImplBase() {
+                    override fun sayHello(request: HelloRequest?, responseObserver: StreamObserver<HelloReply>?) {
+                        val capturedKonigKontext1 = konigKontextKey1.grpcContextKey.get()
+                        val capturedKonigKontext2 = konigKontextKey2.grpcContextKey.get()
+
+                        setter1(capturedKonigKontext1)
+                        setter2(capturedKonigKontext2)
+
+                        val response = HelloReply.getDefaultInstance()
+                        responseObserver?.onNext(response)
+                        responseObserver?.onCompleted()
+                    }
+                }, KonigKontextServerInterceptor(konigKontextKey1, konigKontextKey2))).build()
+                .start()
+        )
+
+        return serverName
+    }
+
 }
