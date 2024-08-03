@@ -1,6 +1,9 @@
 package com.konigsoftware.kontext
 
 import io.grpc.Context
+import java.util.UUID
+import io.grpc.Metadata.Key
+import io.grpc.Metadata
 
 /**
  * Key for indexing values in a KonigKontext instance. There is no way to access a KonigKontextKey's value without
@@ -9,8 +12,9 @@ import io.grpc.Context
  * See the [documentation here](https://github.com/konigsoftware/konig-kontext#1-create-konigkontextkey) for an example implementation of this abstract class.
  */
 abstract class KonigKontextKey<KontextValue> {
-    internal val grpcContextKey = Context.key<KontextValue>("konig-kontext-grpc-context")
-    internal val grpcHeaderKey = KONIG_KONTEXT_GRPC_HEADER_KEY
+    private val keyName = "konig-kontext-grpc-context-${UUID.randomUUID()}"
+    internal val grpcContextKey = Context.key<KontextValue>(keyName)
+    internal val grpcHeaderKey = Key.of("$keyName-bin", Metadata.BINARY_BYTE_MARSHALLER)
 
     /**
      * Override this function to convert your [KontextValue] type into a binary ByteArray.

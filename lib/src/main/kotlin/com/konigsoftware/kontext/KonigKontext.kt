@@ -3,6 +3,7 @@ package com.konigsoftware.kontext
 import io.grpc.Context
 import io.grpc.kotlin.GrpcContextElement
 import kotlinx.coroutines.withContext
+import io.grpc.
 
 /**
  * Key-value store for globally shared context between any number of gRPC microservices. Allows you to set and get a key-value pair
@@ -13,6 +14,8 @@ class KonigKontext<KontextValue> private constructor(
     internal val konigKontextKey: KonigKontextKey<KontextValue>,
     internal val konigKontextValue: KontextValue
 ) {
+    val keyValueEntries = PersistentHashArrayMapped
+
     companion object {
         /**
          * @param key key for the value you want to set. See [here](https://github.com/konigsoftware/konig-kontext#1-create-konigkontextkey)
