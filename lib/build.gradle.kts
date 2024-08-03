@@ -21,6 +21,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.21")
     implementation("com.google.protobuf:protobuf-java-util:3.24.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("io.grpc:grpc-api:1.58.0")
 
     testImplementation(kotlin("test"))
     testImplementation("io.mockk:mockk:1.12.7")
